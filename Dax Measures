@@ -1,0 +1,202 @@
+DAX measures (grouped + lightly refined notes)
+Attendance measures
+Absence Rate
+
+DAX
+Absence Rate =
+DIVIDE(
+    CALCULATE(COUNTROWS(Attendance), Attendance[Status] = "Absent"),
+    COUNTROWS(Attendance)
+)
+Absent Count
+
+DAX
+Absent Count =
+CALCULATE(COUNTROWS(Attendance), Attendance[Status] = "Absent")
+Present Count
+
+DAX
+Present Count =
+CALCULATE(COUNTROWS(Attendance), Attendance[Status] = "Present")
+Late Count
+
+DAX
+Late Count =
+CALCULATE(COUNTROWS(Attendance), Attendance[Status] = "Late")
+Attendance Rate (same idea as Attendance %)
+
+DAX
+Attendance Rate =
+DIVIDE(
+    CALCULATE(COUNTROWS(Attendance), Attendance[Status] = "Present"),
+    COUNTROWS(Attendance)
+)
+Attendance % (you can keep one of these two to avoid duplication)
+
+DAX
+Attendance % =
+DIVIDE(
+    [Present Count],
+    COUNTROWS(Attendance)
+)
+Total Present Days
+
+DAX
+Total Present Days =
+CALCULATE(
+    COUNTROWS(Attendance),
+    Attendance[Status] = "Present"
+)
+AgentDateKey (Attendance)
+
+DAX
+AgentDateKey =
+Attendance[agent_name] & "-" & FORMAT(Attendance[Date], "YYYYMMDD")
+QC / Audit measures
+Avg Accuracy
+
+DAX
+Avg Accuracy =
+AVERAGE(QC_Audit_Data[weighted_accuracy_rate_70_30])
+Avg Accuracy %
+
+DAX
+Avg Accuracy % =
+AVERAGE(QC_Audit_Data[weighted_accuracy_rate_70_30])
+Total Audits
+
+DAX
+Total Audits =
+COUNT(QC_Audit_Data[call_id])
+Fail Count
+
+DAX
+Fail Count =
+CALCULATE(COUNTROWS(QC_Audit_Data), QC_Audit_Data[accuracy_result] = "Fail")
+Pass Count
+
+DAX
+Pass Count =
+CALCULATE(COUNTROWS(QC_Audit_Data), QC_Audit_Data[accuracy_result] = "Pass")
+Fail Rate
+
+DAX
+Fail Rate =
+DIVIDE(
+    SUM(QC_Audit_Data[qa_fail]),
+    [Total Audits]
+)
+Pass Rate %
+
+DAX
+Pass Rate % =
+DIVIDE(
+    CALCULATE(COUNTROWS(QC_Audit_Data), QC_Audit_Data[accuracy_result] = "Pass"),
+    COUNTROWS(QC_Audit_Data)
+)
+Coaching Rate
+
+DAX
+Coaching Rate =
+DIVIDE(
+    CALCULATE(
+        COUNT(QC_Audit_Data[call_id]),
+        QC_Audit_Data[important_misses_count] > 0
+    ),
+    [Total Audits]
+)
+Agent Rank
+
+DAX
+Agent Rank =
+RANKX(
+    ALL(QC_Audit_Data[agent_name]),
+    [Avg Accuracy %],
+    ,
+    DESC,
+    DENSE
+)
+AgentDateKey (QC)
+
+DAX
+AgentDateKey =
+QC_Audit_Data[agent_name] & "-" & FORMAT(QC_Audit_Data[call_date], "YYYYMMDD")
+WFM measures
+Total Inbound Calls
+
+DAX
+Total Inbound Calls =
+SUM('WFM'[Handled (Inbound)])
+Total Outbound Calls
+
+DAX
+Total Outbound Calls =
+SUM('WFM'[Handled (Outbound)])
+Total Calls
+
+DAX
+Total Calls =
+[Total Inbound Calls] + [Total Outbound Calls]
+Total Available Time
+
+DAX
+Total Available Time =
+SUM('WFM'[Available Time])
+Sum Total Unavailable Time
+
+DAX
+Sum Total Unavailable Time =
+SUM('WFM'[Total Unavailable Time])
+Total Login Time
+
+DAX
+Total Login Time =
+SUM('WFM'[Login Time])
+Total Refusals
+
+DAX
+Total Refusals =
+SUM('WFM'[Refused])
+Avg Inbound Talk Time
+
+DAX
+Avg Inbound Talk Time =
+AVERAGE('WFM'[Avg Talk Time (Inbound)])
+Avg Outbound Talk Time
+
+DAX
+Avg Outbound Talk Time =
+AVERAGE('WFM'[Avg Talk Time (Outbound)])
+Calls per Hour  
+(Assumes Total Login Time is in hours or converted appropriately.)
+
+DAX
+Calls per Hour =
+DIVIDE(
+    [Total Calls],
+    [Total Login Time]
+)
+Refusal Rate %
+
+DAX
+Refusal Rate % =
+DIVIDE(
+    SUM('WFM'[Refused]),
+    [Total Calls]
+)
+Availability %
+
+DAX
+Availability % =
+DIVIDE(
+    [Total Available Time],
+    [Total Login Time]
+)
+Utilization %
+
+DAX
+Utilization % =
+DIVIDE(
+    [Total Login Time] - [Total Available Time],
+    [Total Login Time]
+)
