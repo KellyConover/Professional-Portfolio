@@ -1,0 +1,124 @@
+Before the data ever reaches Power BI, the Excel workbook performs a full scoring pipeline using formulas and a custom macro. This ensures that every audit is standardized, validated, and enriched with calculated fields.
+
+1. Accuracy Result Logic
+Determines whether the audit passed or failed based on critical misses:
+
+Code
+=IF(L2="","",IF(L2>0,"Fail","Pass"))
+Interpretation:
+
+If no critical misses → Pass
+
+If one or more critical misses → Fail
+
+This creates the foundational binary outcome used across QC and WFM dashboards.
+
+2. Critical & Important Miss Counters
+Counts how many critical or important items were missed:
+
+Code
+critical_misses_count: =COUNTA(N2,P2,R2)
+important_misses_count: =COUNTA(T2,V2,X2)
+Interpretation:
+
+Critical misses live in N, P, R
+
+Important misses live in T, V, X
+
+This feeds directly into error classification and accuracy scoring.
+
+3. Item‑Level Binary Scoring (DV/AL Logic)
+You built a dynamic scoring system that assigns 1 = pass and 0 = fail for each item based on call type.
+
+Example:
+
+Code
+dv_c1_idv_reviewed:
+=IF(AND(G2="DV",ISNUMBER(SEARCH("C1",N2&P2&R2&T2&V2&X2))),0,1)
+Interpretation:
+
+If the call type is DV
+
+AND the missed items contain “C1”
+
+→ Score = 0 (failed)
+
+Otherwise → Score = 1 (passed)
+
+You have this logic replicated for:
+
+DV Critical (dv_c1, dv_c2, dv_c3…)
+
+DV Important (dv_i1, dv_i2…)
+
+AL Critical (al_c1, al_c2…)
+
+AL Important (al_i1, al_i2…)
+
+This is exactly how professional QA scoring engines work.
+
+4. Total Possible Items (DV vs AL)
+You dynamically calculate how many items could have been scored:
+
+Code
+total_critical_possible: =IF(G2="DV",9,IF(G2="AL",13,""))
+total_important_possible: =IF(G2="DV",3,IF(G2="AL",3,""))
+This allows you to compute accuracy percentages correctly.
+
+5. Accuracy Calculations (Critical, Important, Weighted)
+You built a full accuracy scoring model:
+
+Code
+critical_accuracy_rate: =IF(BC2=0,1,(BC2-L2)/BC2)
+important_accuracy_rate: =IF(BD2=0,1,(BD2-M2)/BD2)
+weighted_accuracy_weight_70_30: =(BE2*0.7)+(BF2*0.3)
+Interpretation:
+
+Critical accuracy = (critical possible – critical missed) / critical possible
+
+Important accuracy = same logic
+
+Weighted accuracy = 70% critical + 30% important
+
+This is a professional‑grade scoring model.
+
+6. Error Classification & Summaries
+You classify the error type:
+
+Code
+error_type: =IFS(L2>0,"Critical",M2>0,"Important",TRUE,"NA")
+And generate a full missed‑item summary:
+
+Code
+missed_items_summary: =IF(COUNTA(N2:Y2)=0,"NA",TEXTJOIN(",",TRUE,N2:Y2))
+This powers your Supervisor dashboard’s “First Missed Item” and “Missed Item Summary” tables.
+
+7. QA Fail Flag
+Binary flag for fail rate calculations:
+
+Code
+qa_fail:=IF(L2>0,1,0)
+This is what feeds your:
+
+Fail Rate KPI
+
+Fail Rate by Team
+
+Fail Rate by Call Type
+
+Pass/Fail donut chart
+
+8. Macro: GenerateCallIDs
+You also have a VBA macro:
+
+Code
+'Automation Test.xlsm'!Module1.GenerateCallIDs
+This likely:
+
+Generates unique call IDs
+
+Ensures no duplicates
+
+Automates row creation
+
+This is a huge value‑add because it shows automation beyond formulas.
